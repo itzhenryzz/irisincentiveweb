@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Memecoin Faucet</title>
+    <style>
+        /* Simple styling to make it look nice */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+        h1 {
+            color: #8A2BE2; /* A fun purple color */
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 1rem 0;
+            border: 1px solid #dddfe2;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #8A2BE2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #7B24C6;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #message {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            min-height: 20px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+
+        .ad-box {
+            width: 100%;
+            margin-bottom: 1rem;
+            min-height: 90px; /* Standard banner height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f2f5;
+            border: 1px dashed #cccccc;
+            color: #cccccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div class="ad-box">
+            Your Ad Banner Will Appear Here
+        </div>
+        <h1>My Meow-mecoin Faucet 🐾</h1>
+        <p>Enter your Solana wallet address to get some free tokens!</p>
+
+        <input type="text" id="walletAddress" placeholder="Enter your Solana address...">
+
+        <button id="claimButton">Claim Tokens!</button>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // --- JavaScript Magic Starts Here ---
+
+        const claimButton = document.getElementById('claimButton');
+        const walletAddressInput = document.getElementById('walletAddress');
+        const messageDiv = document.getElementById('message');
+
+        // Listen for when the user clicks the button
+        claimButton.addEventListener('click', async () => {
+            const walletAddress = walletAddressInput.value;
+
+            // Simple check to make sure the address isn't empty
+            if (!walletAddress) {
+                showMessage('Please enter a wallet address!', 'error');
+                return;
+            }
+
+            // Disable the button to prevent spamming
+            claimButton.disabled = true;
+            claimButton.textContent = 'Claiming...';
+            showMessage('', 'info'); // Clear previous message
+
+            try {
+                // This is the core part: talking to our Python backend
+                const response = await fetch('http://127.0.0.1:5000/claim', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        wallet_address: walletAddress
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Success!
+                    showMessage(data.message, 'success');
+                    // Optional: Link to the transaction on an explorer
+                    const explorerLink = `https://explorer.solana.com/tx/${data.transaction_signature}`;
+                    messageDiv.innerHTML += ` <a href="${explorerLink}" target="_blank">View Transaction</a>`;
+                } else {
+                    // An error from our backend (like cooldown)
+                    showMessage(data.error, 'error');
+                }
+
+            } catch (error) {
+                // A network error or if the server is down
+                console.error('Fetch error:', error);
+                showMessage('Could not connect to the faucet server.', 'error');
+            } finally {
+                // Re-enable the button after the request is finished
+                claimButton.disabled = false;
+                claimButton.textContent = 'Claim Tokens!';
+            }
+        });
+
+        // A helper function to display messages to the user
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = type;
+        }
+
+    </script>
+</body>
+</html>
