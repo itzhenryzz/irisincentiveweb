@@ -196,7 +196,7 @@
             claimButton.textContent = 'Claiming...';
             showMessage('', 'info');
             try {
-                const response = await fetch('https-your-faucet.onrender.com/claim', {
+                const response = await fetch('http://15.204.246.4/claim', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', },
                     body: JSON.stringify({ wallet_address: walletAddress }),
