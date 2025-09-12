@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Memecoin Faucet</title>
-    <script src="ads.js" async></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -163,8 +162,10 @@
         const messageDiv = document.getElementById('message');
 
         function checkAdBlocker() {
-            if (window.adsAreNotBlocked !== true) {
-                // The bait file was blocked!
+            const adBanner = document.querySelector('.ad-banner');
+
+            // If the ad blocker hid our bait div, its height will be 0
+            if (!adBanner || adBanner.offsetHeight === 0) {
                 claimButton.disabled = true;
                 claimButton.textContent = 'Ad Blocker Detected';
                 showMessage('Please disable your ad blocker to support and use the faucet.', 'error');
