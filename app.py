@@ -119,7 +119,7 @@ def send_spl_token(recipient_pubkey: PublicKey, amount: int):
         return None
 
 
-# --- CLAIM ENDPOINT (Updated with VPN/Proxy check) ---
+# --- CLAIM ENDPOINT (Updated with debugging logs) ---
 @app.route("/claim", methods=['POST'])
 def claim_tokens():
     data = request.get_json()
@@ -129,23 +129,28 @@ def claim_tokens():
     wallet_address_str = data['wallet_address']
     ip_address = request.remote_addr
 
-    # Nya! This is our new check for VPN/proxies, meow!
+    print(f"DEBUG: Processing claim request for wallet: {wallet_address_str} from IP: {ip_address}")
+
     if is_ip_proxy_or_vpn(ip_address):
         return jsonify({"error": "Proxy, VPN, or Tor detected. Please disable it to claim tokens."}), 403
 
-    # Check the database for recent claims from this wallet OR this IP
     cooldown_time_limit = datetime.utcnow() - COOLDOWN_PERIOD
+    print(f"DEBUG: Cooldown limit is: {cooldown_time_limit.isoformat()}")
 
+    # The query checks for a recent claim from this wallet OR this IP
     recent_claim = Claim.query.filter(
         (Claim.wallet_address == wallet_address_str) | (Claim.ip_address == ip_address),
         Claim.last_claim_time > cooldown_time_limit
     ).first()
 
     if recent_claim:
+        print(f"DEBUG: Recent claim found! Wallet: {recent_claim.wallet_address}, IP: {recent_claim.ip_address}")
         time_since_claim = datetime.utcnow() - recent_claim.last_claim_time
         time_remaining = COOLDOWN_PERIOD - time_since_claim
         return jsonify(
             {"error": f"Cooldown! Please wait {round(time_remaining.total_seconds() / 3600, 1)} more hours."}), 429
+
+    print("DEBUG: No recent claim found. Proceeding to send tokens.")
 
     # If no recent claim, proceed to send tokens
     try:
@@ -160,18 +165,19 @@ def claim_tokens():
 
             if existing_claim:
                 existing_claim.last_claim_time = datetime.utcnow()
-                existing_claim.wallet_address = wallet_address_str  # Update wallet in case IP was used before
-                existing_claim.ip_address = ip_address  # Update IP in case wallet was used before
+                existing_claim.wallet_address = wallet_address_str
+                existing_claim.ip_address = ip_address
+                print(f"DEBUG: Updating existing claim record for wallet: {wallet_address_str}")
             else:
-                # Create a new record
                 new_claim = Claim(
                     wallet_address=wallet_address_str,
                     ip_address=ip_address,
                     last_claim_time=datetime.utcnow()
                 )
                 db.session.add(new_claim)
+                print(f"DEBUG: Creating new claim record for wallet: {wallet_address_str}")
 
-            db.session.commit()  # Save the changes to the database
+            db.session.commit()
 
             token_amount_display = AMOUNT_TO_SEND / (10 ** 6)
             return jsonify({
@@ -180,9 +186,11 @@ def claim_tokens():
                 "transaction_signature": tx_signature
             })
         else:
+            print("DEBUG: Failed to send tokens, no transaction signature.")
             return jsonify({"error": "Failed to send tokens."}), 500
 
     except Exception:
+        print("DEBUG: An exception occurred during token sending.")
         return jsonify({"error": "Invalid Solana wallet address."}), 400
 
 
