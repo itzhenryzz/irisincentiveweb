@@ -163,24 +163,26 @@
         }
 
         // This is our new, extra-clever adblock detection function, nya!
-        async function checkAdBlocker() {
-            const startTime = performance.now();
-            const adUrl = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
+        function checkAdBlocker() {
+            // Part 1: Check for a known global variable from a common ad script.
+            const globalVariableCheck = typeof window.ezstandalone === 'undefined' ? true : false;
 
-            try {
-                // We try to fetch this URL, but we use a "no-cors" mode to prevent errors
-                await fetch(new Request(adUrl));
-            } catch (e) {
-                // If the fetch fails, it means the ad blocker is working!
-                const endTime = performance.now();
-                const duration = endTime - startTime;
+            // Part 2: Check for a hidden CSS element.
+            const bait = document.createElement('div');
+            bait.style.cssText = 'width: 1px; height: 1px; position: absolute; top: -9999px; visibility: hidden;';
+            bait.className = 'ad-container';
+            document.body.appendChild(bait);
+            const hiddenElementCheck = bait.offsetHeight === 0 ? true : false;
+            document.body.removeChild(bait);
 
-                // Brave Shields blocks requests very quickly (less than 5ms)
-                if (duration < 50) {
-                    claimButton.disabled = true;
-                    claimButton.textContent = 'Ad Blocker Detected';
-                    showMessage('Please disable your ad blocker to support and use the faucet.', 'error');
-                }
+            // If either of our two checks pass, we know an ad blocker is active.
+            if (globalVariableCheck || hiddenElementCheck) {
+                claimButton.disabled = true;
+                claimButton.textContent = 'Ad Blocker Detected';
+                showMessage('Please disable your ad blocker to support and use the faucet.', 'error');
+            } else {
+                claimButton.disabled = false;
+                claimButton.textContent = 'Claim Tokens!';
             }
         }
 
@@ -202,7 +204,7 @@
             claimButton.textContent = 'Claiming...';
             showMessage('', 'info');
             try {
-                const response = await fetch('https://your-faucet.onrender.com/claim', {
+                const response = await fetch('https-your-faucet.onrender.com/claim', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', },
                     body: JSON.stringify({ wallet_address: walletAddress }),
