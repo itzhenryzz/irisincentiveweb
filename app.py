@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy  # New import
+import requests
 
 # --- Load Secret Environment Variables ---
 load_dotenv()
@@ -16,6 +17,11 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)  # Initialize the database connection
+
+# Add your IP2Proxy API key here, nya!
+IP2PROXY_API_KEY = os.getenv("IP2PROXY_API_KEY")
+if not IP2PROXY_API_KEY:
+    raise ValueError("IP2PROXY_API_KEY not found in .env file!")
 
 # --- Solana Imports for version 0.28.0 ---
 from solana.publickey import PublicKey
@@ -48,6 +54,30 @@ class Claim(db.Model):
 with app.app_context():
     db.create_all()
 
+# --- VPN/Proxy Detection Helper Function (Add it here, nya!) ---
+def is_ip_proxy_or_vpn(ip_address):
+    # The API endpoint is a GET request, with the IP and API key as parameters.
+    # We use a f-string to insert the ip_address and API key dynamically.
+    api_url = f"https://api.ip2proxy.com/?ip={ip_address}&key={IP2PROXY_API_KEY}&format=json"
+
+    try:
+        response = requests.get(api_url)
+        # Check if the API call was successful
+        if response.status_code == 200:
+            data = response.json()
+            # The API returns 'isProxy' as a string. 'NO' means it's not a proxy.
+            if data.get('isProxy') and data.get('isProxy') != 'NO':
+                print(f"VPN/Proxy detected for IP: {ip_address}")
+                return True
+            else:
+                return False
+        else:
+            # The API call failed, so we can't be sure.
+            # We'll return False to avoid blocking good users by accident.
+            return False
+    except requests.exceptions.RequestException as e:
+        print(f"VPN/Proxy detection API call failed: {e}")
+        return False
 
 # --- HELPER FUNCTION TO SEND TOKEN (No changes here) ---
 def send_spl_token(recipient_pubkey: PublicKey, amount: int):
@@ -89,7 +119,7 @@ def send_spl_token(recipient_pubkey: PublicKey, amount: int):
         return None
 
 
-# --- CLAIM ENDPOINT (Rewritten to use the database) ---
+# --- CLAIM ENDPOINT (Updated with VPN/Proxy check) ---
 @app.route("/claim", methods=['POST'])
 def claim_tokens():
     data = request.get_json()
@@ -98,6 +128,10 @@ def claim_tokens():
 
     wallet_address_str = data['wallet_address']
     ip_address = request.remote_addr
+
+    # Nya! This is our new check for VPN/proxies, meow!
+    if is_ip_proxy_or_vpn(ip_address):
+        return jsonify({"error": "Proxy, VPN, or Tor detected. Please disable it to claim tokens."}), 403
 
     # Check the database for recent claims from this wallet OR this IP
     cooldown_time_limit = datetime.utcnow() - COOLDOWN_PERIOD
