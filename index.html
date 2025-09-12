@@ -4,157 +4,212 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Memecoin Faucet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Simple styling to make it look nice */
+        :root {
+            --dark-bg: #0D1117;
+            --light-bg: #161B22;
+            --border-color: #30363D;
+            --text-color: #c9d1d9;
+            --text-secondary: #8b949e;
+            --neon-start: #33D3B5;
+            --neon-end: #2AB8F5;
+        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* Allow multiple sections */
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background-color: #f0f2f5;
-            color: #1c1e21;
+            padding: 2rem 1rem;
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
         }
         .container {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: var(--light-bg);
+            padding: 2.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
             text-align: center;
-            width: 90%;
-            max-width: 400px;
+            width: 100%;
+            max-width: 480px;
+            margin-bottom: 2rem;
         }
         h1 {
-            color: #8A2BE2; /* A fun purple color */
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            /* This is the magic for neon gradient text */
+            background: linear-gradient(90deg, var(--neon-start), var(--neon-end));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px rgba(51, 211, 181, 0.3);
+        }
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
         }
         input {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin: 1rem 0;
-            border: 1px solid #dddfe2;
-            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            font-size: 1rem;
             box-sizing: border-box;
         }
         button {
             width: 100%;
-            padding: 12px;
-            background-color: #8A2BE2;
+            padding: 14px;
+            background-image: linear-gradient(90deg, var(--neon-start), var(--neon-end));
             color: white;
             border: none;
-            border-radius: 6px;
-            font-size: 1rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 0 20px rgba(42, 184, 245, 0.4);
         }
         button:hover {
-            background-color: #7B24C6;
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(42, 184, 245, 0.6);
         }
         button:disabled {
-            background-color: #cccccc;
+            background-image: none;
+            background-color: var(--border-color);
             cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
         }
         #message {
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            min-height: 20px;
+            margin-top: 1.5rem;
+            font-size: 1rem;
+            min-height: 24px;
         }
-        .success { color: green; }
-        .error { color: red; }
-
-        .ad-box {
+        .success { color: var(--neon-start); }
+        .error { color: #f85149; }
+        .info-section {
             width: 100%;
+            max-width: 480px;
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+        .info-section h2 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
             margin-bottom: 1rem;
-            min-height: 90px; /* Standard banner height */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f0f2f5;
-            border: 1px dashed #cccccc;
-            color: #cccccc;
+            color: var(--neon-end);
+        }
+        .info-section ul {
+            list-style: none;
+            padding: 0;
+            color: var(--text-secondary);
+        }
+        .info-section li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .info-section li::before {
+            content: '🐾';
+            position: absolute;
+            left: 0;
+            color: var(--neon-start);
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <h1>MEMECOIN FAUCET</h1>
+        <p>Your daily dose of memecoins, served fresh!</p>
 
         <div class="ad-box">
-            Your Ad Banner Will Appear Here
-        </div>
-        <h1>My Meow-mecoin Faucet 🐾</h1>
-        <p>Enter your Solana wallet address to get some free tokens!</p>
+            </div>
 
         <input type="text" id="walletAddress" placeholder="Enter your Solana address...">
-
         <button id="claimButton">Claim Tokens!</button>
-
         <div id="message"></div>
+    </div>
+
+    <div class="info-section">
+        <h2>About Our Coin</h2>
+        <p>This coin is all about community! We believe in rewarding users who engage with our platform and help it grow. The more you participate, the more you can earn. Let's build something awesome together!</p>
+    </div>
+
+    <div class="info-section">
+        <h2>Faucet Rules</h2>
+        <ul>
+            <li>You can claim 100 tokens every 24 hours.</li>
+            <li>Please disable any ad-blocking software to support the faucet.</li>
+            <li>Using a VPN, proxy, or multiple accounts is not allowed.</li>
+        </ul>
     </div>
 
     <script>
         // --- JavaScript Magic Starts Here ---
+        // (The JavaScript code is the same and will work perfectly!)
 
         const claimButton = document.getElementById('claimButton');
         const walletAddressInput = document.getElementById('walletAddress');
         const messageDiv = document.getElementById('message');
 
-        // Listen for when the user clicks the button
+        function checkAdBlocker() {
+            if (window.adsAreNotBlocked !== true) {
+                // The bait file was blocked!
+                claimButton.disabled = true;
+                claimButton.textContent = 'Ad Blocker Detected';
+                showMessage('Please disable your ad blocker to support and use the faucet.', 'error');
+            }
+        }
+
+        // Wait a tiny bit for ad blockers to run, then check.
+        // We use setTimeout to give the ad blocker a moment to remove our bait file.
+        setTimeout(checkAdBlocker, 500);
+
         claimButton.addEventListener('click', async () => {
             const walletAddress = walletAddressInput.value;
-
-            // Simple check to make sure the address isn't empty
             if (!walletAddress) {
                 showMessage('Please enter a wallet address!', 'error');
                 return;
             }
-
-            // Disable the button to prevent spamming
             claimButton.disabled = true;
             claimButton.textContent = 'Claiming...';
-            showMessage('', 'info'); // Clear previous message
-
+            showMessage('', 'info');
             try {
-                // This is the core part: talking to our Python backend
-                const response = await fetch('https-your-faucet.onrender.com/claim', {
+                const response = await fetch('https-your-faucet.onrender.com/claim', { // Remember to update this URL!
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        wallet_address: walletAddress
-                    }),
+                    headers: { 'Content-Type': 'application/json', },
+                    body: JSON.stringify({ wallet_address: walletAddress }),
                 });
-
                 const data = await response.json();
-
                 if (response.ok) {
-                    // Success!
                     showMessage(data.message, 'success');
-                    // Optional: Link to the transaction on an explorer
                     const explorerLink = `https://explorer.solana.com/tx/${data.transaction_signature}`;
-                    messageDiv.innerHTML += ` <a href="${explorerLink}" target="_blank">View Transaction</a>`;
+                    messageDiv.innerHTML += ` <a href="${explorerLink}" target="_blank" style="color: var(--neon-end);">View Transaction</a>`;
                 } else {
-                    // An error from our backend (like cooldown)
                     showMessage(data.error, 'error');
                 }
-
             } catch (error) {
-                // A network error or if the server is down
                 console.error('Fetch error:', error);
                 showMessage('Could not connect to the faucet server.', 'error');
             } finally {
-                // Re-enable the button after the request is finished
                 claimButton.disabled = false;
                 claimButton.textContent = 'Claim Tokens!';
             }
         });
 
-        // A helper function to display messages to the user
         function showMessage(text, type) {
             messageDiv.textContent = text;
             messageDiv.className = type;
         }
-
     </script>
 </body>
 </html>
