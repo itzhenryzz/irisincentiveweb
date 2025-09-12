@@ -50,9 +50,9 @@ class Claim(db.Model):
     last_claim_time = db.Column(db.DateTime, nullable=False)
 
 
-# --- Create the table if it doesn't exist ---
-with app.app_context():
-    db.create_all()
+# --- Create the table if it doesn't exist commented out due to crash, prefer create manual table---
+#with app.app_context():
+#    db.create_all()
 
 # --- VPN/Proxy Detection Helper Function (Add it here, nya!) ---
 def is_ip_proxy_or_vpn(ip_address):
