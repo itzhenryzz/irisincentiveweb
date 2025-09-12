@@ -7,12 +7,16 @@ from flask import Flask, request, jsonify
 from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy  # New import
 import requests
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # --- Load Secret Environment Variables ---
 load_dotenv()
 
 # --- App & Database Setup ---
 app = Flask(__name__)
+
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
 # Load the database URL from our .env file
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
