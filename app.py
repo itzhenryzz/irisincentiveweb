@@ -41,7 +41,7 @@ SECRET_KEY_STRING = os.getenv("SECRET_KEY")
 if not SECRET_KEY_STRING:
     raise ValueError("SECRET_KEY not found in .env file!")
 FAUCET_KEYPAIR = Keypair.from_secret_key(base58.b58decode(SECRET_KEY_STRING))
-TOKEN_MINT_ADDRESS = PublicKey("WyYepHtDRM4EbmLSubg8mZp3g6fDf3Gs7TnAK59ph2d")
+TOKEN_MINT_ADDRESS = PublicKey("5FMU7DUgkD8cA8hBXc4QSsLA7PzJGSfYEtZBYA1hoCf2")
 AMOUNT_TO_SEND = 100 * (10 ** 6)
 COOLDOWN_PERIOD = timedelta(hours=24)  # Changed to 24 hours
 
