@@ -181,6 +181,7 @@
 
         // Nya! The claim button logic now handles everything, meow!
         claimButton.addEventListener('click', async () => {
+            console.log("Button clicked, meow!");
             // First, check if the wallet is connected. If not, connect it.
             if (!provider || !provider.isConnected) {
                 if (!window.solana) {
