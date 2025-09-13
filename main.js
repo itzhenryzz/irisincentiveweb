@@ -1,3 +1,6 @@
+import { Buffer } from 'buffer';
+window.Buffer = Buffer;
+
 // Import the functions you need from the libraries you installed with npm
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
