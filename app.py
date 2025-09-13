@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy  # New import
 import requests
 from werkzeug.middleware.proxy_fix import ProxyFix
+import time
 
 # --- Load Secret Environment Variables ---
 load_dotenv()
@@ -94,6 +95,25 @@ def send_spl_token(recipient_pubkey: PublicKey, amount: int):
         dest_token_account, _ = PublicKey.find_program_address(
             [bytes(recipient_pubkey), bytes(TOKEN_PROGRAM_ID), bytes(TOKEN_MINT_ADDRESS)], ASSOCIATED_TOKEN_PROGRAM_ID
         )
+
+        account_found = False
+        for i in range(10):  # Try up to 10 times
+            print(f"DEBUG: Checking for destination ATA, attempt {i + 1}...")
+            try:
+                account_info = client.get_account_info(dest_token_account)
+                if account_info.value is not None:
+                    print("DEBUG: Destination ATA found!")
+                    account_found = True
+                    break  # Exit the loop if account is found
+            except Exception as e:
+                print(f"DEBUG: Error while checking for ATA, will retry: {e}")
+
+            print("DEBUG: ATA not found yet, waiting 2 seconds...")
+            time.sleep(2)  # Wait for 2 seconds before trying again
+
+        if not account_found:
+            print("ERROR: Destination ATA not found after multiple retries.")
+            raise Exception("Could not find the destination token account after creation.")
 
         # Nya! We no longer need to check or create the ATA here.
         # We assume the user has created it themselves, nya!
