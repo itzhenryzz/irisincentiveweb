@@ -218,16 +218,16 @@
             showMessage('', 'info');
 
             try {
-                const connection = new Solana.Connection('https://api.mainnet-beta.solana.com');
-                const recipientPublicKey = new Solana.PublicKey(walletAddress);
-                const mintPublicKey = new Solana.PublicKey(TOKEN_MINT_ADDRESS);
+                const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
+                const recipientPublicKey = new solanaWeb3.PublicKey(walletAddress);
+                const mintPublicKey = new solanaWeb3.PublicKey(TOKEN_MINT_ADDRESS);
 
-                const associatedTokenAddress = await Solana.SPLToken.getAssociatedTokenAddress(
+                const associatedTokenAddress = await splToken.getAssociatedTokenAddress(
                     mintPublicKey,
                     recipientPublicKey,
                     false,
-                    Solana.SPLToken.TOKEN_PROGRAM_ID,
-                    Solana.SPLToken.ASSOCIATED_TOKEN_PROGRAM_ID
+                    splToken.TOKEN_PROGRAM_ID,
+                    splToken.ASSOCIATED_TOKEN_PROGRAM_ID
                 );
 
                 const accountInfo = await connection.getAccountInfo(associatedTokenAddress);
@@ -236,14 +236,14 @@
                 if (!accountInfo) {
                     showMessage('Token account not found. Please approve the transaction to create it...', 'info');
 
-                    const transaction = new Solana.Transaction().add(
-                        Solana.SPLToken.createAssociatedTokenAccountInstruction(
+                    const transaction = new solanaWeb3.Transaction().add(
+                        splToken.createAssociatedTokenAccountInstruction(
                             recipientPublicKey,
                             associatedTokenAddress,
                             recipientPublicKey,
                             mintPublicKey,
-                            Solana.SPLToken.TOKEN_PROGRAM_ID,
-                            Solana.SPLToken.ASSOCIATED_TOKEN_PROGRAM_ID
+                            splToken.TOKEN_PROGRAM_ID,
+                            splToken.ASSOCIATED_TOKEN_PROGRAM_ID
                         )
                     );
 
