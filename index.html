@@ -177,7 +177,7 @@
                 showMessage('Please disable your ad blocker to support and use the faucet.', 'error');
             });
         }
-        setTimeout(checkAdBlocker, 500);
+        // setTimeout(checkAdBlocker, 500);
 
         // Nya! The claim button logic now handles everything, meow!
         claimButton.addEventListener('click', async () => {
@@ -210,9 +210,11 @@
                 return;
             }
 
+            /*
             if (adBlockerDetected) {
                 return;
             }
+            */
 
             claimButton.disabled = true;
             claimButton.textContent = 'Claiming...';
