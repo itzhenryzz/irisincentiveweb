@@ -8,6 +8,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@solana/spl-token@latest/lib/index.iife.min.js"></script>
+
     <style>
         :root {
             --dark-bg: #0D1117;
@@ -131,8 +134,8 @@
         <h1>MEMECOIN FAUCET</h1>
         <p>Your daily dose of memecoins, served fresh!</p>
 
-        <input type="text" id="walletAddress" placeholder="Enter your Solana address...">
-        <button id="claimButton">Claim Tokens!</button>
+        <input type="text" id="walletAddress" placeholder="Connect a wallet first..." disabled>
+        <button id="claimButton">Connect Wallet / Claim Tokens!</button>
         <div id="message"></div>
     </div>
 
@@ -152,36 +155,54 @@
 
     <script>
         // --- JavaScript Magic Starts Here ---
-
         const claimButton = document.getElementById('claimButton');
         const walletAddressInput = document.getElementById('walletAddress');
         const messageDiv = document.getElementById('message');
+
+        let provider, wallet;
         let adBlockerDetected = false;
+        const TOKEN_MINT_ADDRESS = '5FMU7DUgkD8cA8hBXc4QSsLA7PzJGSfYEtZBYA1hoCf2';
 
         function showMessage(text, type) {
             messageDiv.textContent = text;
             messageDiv.className = type;
         }
 
-        // This is our new, more precise adblock detection function, nya!
         function checkAdBlocker() {
-            // A common URL that is blocked by many adblockers
             const adUrl = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
-
-            // We try to fetch this URL.
             fetch(new Request(adUrl)).catch(() => {
-                // If the fetch fails, it means the ad blocker is working!
                 adBlockerDetected = true;
                 claimButton.disabled = true;
                 claimButton.textContent = 'Ad Blocker Detected';
                 showMessage('Please disable your ad blocker to support and use the faucet.', 'error');
             });
         }
-
-        // We check for adblocker after a short delay, meow!
         setTimeout(checkAdBlocker, 500);
 
+        // Nya! The claim button logic now handles everything, meow!
         claimButton.addEventListener('click', async () => {
+            // First, check if the wallet is connected. If not, connect it.
+            if (!provider || !provider.isConnected) {
+                if (!window.solana) {
+                    showMessage('Solana wallet not found. Please install Phantom or Solflare.', 'error');
+                    return;
+                }
+                provider = window.solana;
+                try {
+                    const resp = await provider.connect();
+                    wallet = resp.publicKey.toString();
+                    walletAddressInput.value = wallet;
+                    walletAddressInput.disabled = true;
+                    claimButton.textContent = 'Claim Tokens!';
+                    showMessage('Wallet connected successfully! You can now claim.', 'success');
+                    return; // Stop here, so the user can click again to claim
+                } catch (err) {
+                    showMessage('Failed to connect wallet.', 'error');
+                    return;
+                }
+            }
+
+            // If the wallet is connected, proceed with the claim process
             const walletAddress = walletAddressInput.value;
             if (!walletAddress) {
                 showMessage('Please enter a wallet address!', 'error');
@@ -195,7 +216,47 @@
             claimButton.disabled = true;
             claimButton.textContent = 'Claiming...';
             showMessage('', 'info');
+
             try {
+                const connection = new Solana.Connection('https://api.mainnet-beta.solana.com');
+                const recipientPublicKey = new Solana.PublicKey(walletAddress);
+                const mintPublicKey = new Solana.PublicKey(TOKEN_MINT_ADDRESS);
+                const associatedTokenAddress = await Solana.SPLToken.getAssociatedTokenAddress(
+                    mintPublicKey,
+                    recipientPublicKey,
+                    false,
+                    Solana.SPLToken.TOKEN_PROGRAM_ID,
+                    Solana.SPLToken.ASSOCIATED_TOKEN_PROGRAM_ID
+                );
+
+                const accountInfo = await connection.getAccountInfo(associatedTokenAddress);
+
+                // If the account does not exist, we need to create it!
+                if (!accountInfo) {
+                    showMessage('Token account not found. Please approve the transaction to create it...', 'info');
+
+                    const transaction = new Solana.Transaction().add(
+                        Solana.SPLToken.createAssociatedTokenAccountInstruction(
+                            recipientPublicKey,
+                            associatedTokenAddress,
+                            recipientPublicKey,
+                            mintPublicKey,
+                            Solana.SPLToken.TOKEN_PROGRAM_ID,
+                            Solana.SPLToken.ASSOCIATED_TOKEN_PROGRAM_ID
+                        )
+                    );
+
+                    const { blockhash } = await connection.getLatestBlockhash();
+                    transaction.recentBlockhash = blockhash;
+                    transaction.feePayer = recipientPublicKey; // User pays the fee
+
+                    const signedTx = await provider.signTransaction(transaction);
+                    await connection.sendRawTransaction(signedTx.serialize());
+
+                    showMessage('Token account created! Sending tokens...', 'info');
+                }
+
+                // Now that the account exists, we can call the backend to send tokens!
                 const response = await fetch('http://irisincentive.xyz/claim', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', },
