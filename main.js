@@ -1,4 +1,3 @@
-
 // Import the functions you need from the libraries you installed with npm
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
 import { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
@@ -68,7 +67,7 @@ claimButton.addEventListener('click', async () => {
 
     try {
         console.log("Setting up Solana connection and keys...");
-        const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+        const connection = new Connection('https://snowy-sleek-moon.solana-mainnet.quiknode.pro/b782686111aa4eac5d9df855722fc24d95c7cc98/', 'confirmed');
         const recipientPublicKey = new PublicKey(walletAddress);
         const mintPublicKey = new PublicKey(TOKEN_MINT_ADDRESS);
 
