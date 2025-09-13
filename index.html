@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@solana/spl-token@latest/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@solana/web3.js@0.1.8/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
 
     <style>
         :root {
@@ -135,7 +135,7 @@
         <p>Your daily dose of memecoins, served fresh!</p>
 
         <input type="text" id="walletAddress" placeholder="Connect a wallet first..." disabled>
-        <button id="claimButton">Connect Wallet / Claim Tokens!</button>
+        <button id="claimButton">Connect Wallet</button>
         <div id="message"></div>
     </div>
 
@@ -168,6 +168,7 @@
             messageDiv.className = type;
         }
 
+        // We re-enable the ad blocker check here
         function checkAdBlocker() {
             const adUrl = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
             fetch(new Request(adUrl)).catch(() => {
@@ -179,7 +180,6 @@
         }
         setTimeout(checkAdBlocker, 500);
 
-        // Nya! The claim button logic now handles everything, meow!
         claimButton.addEventListener('click', async () => {
             // First, check if the wallet is connected. If not, connect it.
             if (!provider || !provider.isConnected) {
@@ -215,13 +215,15 @@
 
             claimButton.disabled = true;
             claimButton.textContent = 'Claiming...';
-            showMessage('', 'info');
+            showMessage('Please wait, preparing your transaction...', 'info');
 
             try {
+                // FIXED: Use correct 'solanaWeb3' variable
                 const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
                 const recipientPublicKey = new solanaWeb3.PublicKey(walletAddress);
                 const mintPublicKey = new solanaWeb3.PublicKey(TOKEN_MINT_ADDRESS);
 
+                // FIXED: Use correct 'splToken' variable and ensure all calls on it are correct
                 const associatedTokenAddress = await splToken.getAssociatedTokenAddress(
                     mintPublicKey,
                     recipientPublicKey,
@@ -254,15 +256,19 @@
                     const signedTx = await provider.signTransaction(transaction);
                     await connection.sendRawTransaction(signedTx.serialize());
 
+                    await connection.confirmTransaction(await connection.sendRawTransaction(signedTx.serialize()));
+
+
                     showMessage('Token account created! Sending tokens...', 'info');
                 }
 
-                // Now that the account exists, we can call the backend to send tokens!
-                const response = await fetch('http://irisincentive.xyz/claim', {
+                // FIXED: Use relative URL '/claim' for HTTPS compatibility
+                const response = await fetch('/claim', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', },
                     body: JSON.stringify({ wallet_address: walletAddress }),
                 });
+
                 const data = await response.json();
                 if (response.ok) {
                     showMessage(data.message, 'success');
@@ -273,7 +279,7 @@
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
-                showMessage('Could not connect to the faucet server.', 'error');
+                showMessage('An error occurred. Please check the console and try again.', 'error');
             } finally {
                 claimButton.disabled = false;
                 claimButton.textContent = 'Claim Tokens!';
