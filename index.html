@@ -179,16 +179,15 @@
         }
         setTimeout(checkAdBlocker, 500);
 
-        // This is the corrected and simplified event listener
+        // Nya! The claim button logic now handles everything, meow!
         claimButton.addEventListener('click', async () => {
-            if (!window.solana) {
-                showMessage('Solana wallet not found. Please install Phantom or Solflare.', 'error');
-                return;
-            }
-
-            provider = window.solana;
-
-            if (!provider.isConnected) {
+            // First, check if the wallet is connected. If not, connect it.
+            if (!provider || !provider.isConnected) {
+                if (!window.solana) {
+                    showMessage('Solana wallet not found. Please install Phantom or Solflare.', 'error');
+                    return;
+                }
+                provider = window.solana;
                 try {
                     await provider.connect();
                     wallet = provider.publicKey.toString();
@@ -196,13 +195,14 @@
                     walletAddressInput.disabled = true;
                     claimButton.textContent = 'Claim Tokens!';
                     showMessage('Wallet connected successfully! You can now claim.', 'success');
-                    return;
+                    return; // Stop here, so the user can click again to claim
                 } catch (err) {
                     showMessage('Failed to connect wallet.', 'error');
                     return;
                 }
             }
 
+            // If the wallet is connected, proceed with the claim process
             const walletAddress = walletAddressInput.value;
             if (!walletAddress) {
                 showMessage('Please enter a wallet address!', 'error');
@@ -232,6 +232,7 @@
 
                 const accountInfo = await connection.getAccountInfo(associatedTokenAddress);
 
+                // If the account does not exist, we need to create it!
                 if (!accountInfo) {
                     showMessage('Token account not found. Please approve the transaction to create it...', 'info');
 
@@ -248,7 +249,7 @@
 
                     const { blockhash } = await connection.getLatestBlockhash();
                     transaction.recentBlockhash = blockhash;
-                    transaction.feePayer = recipientPublicKey;
+                    transaction.feePayer = recipientPublicKey; // User pays the fee
 
                     const signedTx = await provider.signTransaction(transaction);
                     await connection.sendRawTransaction(signedTx.serialize());
@@ -256,6 +257,7 @@
                     showMessage('Token account created! Sending tokens...', 'info');
                 }
 
+                // Now that the account exists, we can call the backend to send tokens!
                 const response = await fetch('http://irisincentive.xyz/claim', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', },
