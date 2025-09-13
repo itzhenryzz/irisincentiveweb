@@ -181,16 +181,13 @@
 
         // This is the corrected and simplified event listener
         claimButton.addEventListener('click', async () => {
-            // Check if the wallet is available
             if (!window.solana) {
                 showMessage('Solana wallet not found. Please install Phantom or Solflare.', 'error');
                 return;
             }
 
-            // Set the provider
             provider = window.solana;
 
-            // Handle wallet connection first
             if (!provider.isConnected) {
                 try {
                     await provider.connect();
@@ -206,7 +203,6 @@
                 }
             }
 
-            // Once the wallet is connected, proceed with the claim process
             const walletAddress = walletAddressInput.value;
             if (!walletAddress) {
                 showMessage('Please enter a wallet address!', 'error');
