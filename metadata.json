@@ -2,7 +2,7 @@
   "name": "Iris Incentive",
   "symbol": "IC",
   "description": "A reward coin of the Iris Incentive platform",
-  "image": "irisincentive.png",
+  "image": "https://raw.githubusercontent.com/itzhenryzz/irisincentiveweb/refs/heads/main/assets/irisincentive.png",
   "attributes": [],
   "properties": {
     "files": [
