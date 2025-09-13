@@ -85,7 +85,6 @@ def is_ip_proxy_or_vpn(ip_address):
 
 # --- HELPER FUNCTION TO SEND TOKEN (No changes here) ---
 def send_spl_token(recipient_pubkey: PublicKey, amount: int):
-    # ... (This function is the same as our last working version)
     try:
         client = Client(RPC_URL)
         source_token_account, _ = PublicKey.find_program_address(
@@ -95,15 +94,11 @@ def send_spl_token(recipient_pubkey: PublicKey, amount: int):
         dest_token_account, _ = PublicKey.find_program_address(
             [bytes(recipient_pubkey), bytes(TOKEN_PROGRAM_ID), bytes(TOKEN_MINT_ADDRESS)], ASSOCIATED_TOKEN_PROGRAM_ID
         )
+
+        # Nya! We no longer need to check or create the ATA here.
+        # We assume the user has created it themselves, nya!
+
         txn = Transaction()
-        account_info = client.get_account_info(dest_token_account)
-        if not account_info.value:
-            create_ix = create_associated_token_account(
-                payer=FAUCET_KEYPAIR.public_key,
-                owner=recipient_pubkey,
-                mint=TOKEN_MINT_ADDRESS
-            )
-            txn.add(create_ix)
         transfer_ix = transfer(
             params=TransferParams(
                 source=source_token_account,
