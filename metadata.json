@@ -3,6 +3,6 @@
   "symbol": "IC",
   "description": "A reward coin of the Iris Incentive platform",
   "image": "https://raw.githubusercontent.com/itzhenryzz/irisincentiveweb/refs/heads/main/assets/irisincentive.png",
-  "seller_fee_basispoints": 0, 
+  "seller_fee_basis_points": 0, 
   "uri": "https://raw.githubusercontent.com/itzhenryzz/irisincentiveweb/refs/heads/main/metadata.json"
 }
